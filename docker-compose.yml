@@ -7,38 +7,29 @@ services:
     image: emp_aws-app
     ports:
       - "9090:9090"
-    environment:
-      # Let Spring Boot pick this up; you can also remove and let application.properties default
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/emp_aws
-      SPRING_DATASOURCE_USERNAME: rahul
-      SPRING_DATASOURCE_PASSWORD: 12345
-    depends_on:
-      - mysql-db
-    # Wait for mysql:3306 using bash /dev/tcp (doesn't need nc). Works if base image has bash.
-    command: >
-      sh -c "until (echo > /dev/tcp/mysql-db/3306) >/dev/null 2>&1; do echo 'waiting for mysql-db:3306'; sleep 2; done;
-             echo 'mysql reachable - starting app'; java -jar /app.jar"
-    restart: on-failure
-
+    networks:
+      - my-network
+  
+   
   mysql-db:
     image: mysql:8.0
     container_name: mysql-db
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword    # required
       MYSQL_DATABASE: emp_aws
-      MYSQL_USER=rahul
-      MYSQL_PASSWORD=12345
+      MYSQL_USER: rahul
+      MYSQL_PASSWORD: 12345
     ports:
       - "3306:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
+     networks:
+      - my-network
 
-volumes:
-  mysql-data:
+
+networks:
+  my-network:
+    driver: bridge
+   
+
+
+  
 
